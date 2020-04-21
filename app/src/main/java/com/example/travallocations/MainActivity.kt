@@ -1,12 +1,21 @@
 package com.example.travallocations
 
+//import android.content.Context
+//import android.content.Intent
+//import android.os.Bundle
+//import androidx.appcompat.app.AppCompatActivity
+//import android.view.Menu
+//import android.view.MenuItem
+//import kotlinx.android.synthetic.main.activity_main.*
+
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_main.*
+import java.lang.Exception
 
 
 class MainActivity : AppCompatActivity() {
@@ -46,6 +55,8 @@ class MainActivity : AppCompatActivity() {
             val addressIndex = cursor.getColumnIndex("address")
             val latitudeIndex = cursor.getColumnIndex("latitude")
             val longitudeIndex = cursor.getColumnIndex("longitude")
+
+            placesArray.clear()
 
             while(cursor.moveToNext()) {
 

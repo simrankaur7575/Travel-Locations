@@ -143,7 +143,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         p0.longitude
                     )
 
-
+                val dialog = AlertDialog.Builder(this@MapsActivity)
+                dialog.setCancelable(false)
+                dialog.setTitle("Are You Sure?")
+                dialog.setMessage(newPlace.address)
+                dialog.setPositiveButton("Yes") {dialog, which ->
 
                     try {
 
@@ -162,6 +166,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
 
                     Toast.makeText(this@MapsActivity, "New Place Created", Toast.LENGTH_LONG).show()
+
+                }.setNegativeButton("No") {dialog, which ->
+                    Toast.makeText(this@MapsActivity,"Canceled!",Toast.LENGTH_LONG).show()
+                }
+                dialog.show()
                 }
         }
     }
