@@ -79,6 +79,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,2,2f,locationListener)
 
+            val intent = intent
+            val info = intent.getStringExtra("info")
+
+            if (info.equals("new")) {
+                mMap.clear()
+                val lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                if (lastLocation != null) {
+                    val lastLocationLatLng = LatLng(lastLocation.latitude,lastLocation.longitude)
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastLocationLatLng,15f))
+                }
+            } else {
+
+
+            }
+
         }
 
 
