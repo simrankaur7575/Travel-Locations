@@ -1,5 +1,6 @@
 package com.example.travallocations
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +9,9 @@ import android.view.MenuItem
 
 
 class MainActivity : AppCompatActivity() {
+
+    var placesArray = ArrayList<Place>()
+
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
 
@@ -32,5 +36,38 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        try {
+
+            val database = openOrCreateDatabase("Places", Context.MODE_PRIVATE,null)
+            val cursor = database.rawQuery("SELECT * FROM places",null)
+
+            val addressIndex = cursor.getColumnIndex("address")
+            val latitudeIndex = cursor.getColumnIndex("latitude")
+            val longitudeIndex = cursor.getColumnIndex("longitude")
+
+            while(cursor.moveToNext()) {
+
+                val addressFromDatabase = cursor.getString(addressIndex)
+                val latitudeFromDatabase = cursor.getDouble(latitudeIndex)
+                val longitudeFromDatabase = cursor.getDouble(longitudeIndex)
+
+                val myPlace = Place(
+                    addressFromDatabase,
+                    latitudeFromDatabase,
+                    longitudeFromDatabase
+                )
+
+                placesArray.add(myPlace)
+
+            }
+
+            cursor.close()
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+
     }
 }
