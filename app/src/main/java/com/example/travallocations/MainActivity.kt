@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         if (item.itemId == R.id.add_place_option) {
 
             val intent = Intent(applicationContext, MapsActivity::class.java)
-
+            intent.putExtra("info","new")
             startActivity(intent)
         }
 
