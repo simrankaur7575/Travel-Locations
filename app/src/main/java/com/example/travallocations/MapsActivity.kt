@@ -95,8 +95,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastLocationLatLng,15f))
                 }
             } else {
+                mMap.clear()
 
-
+                val selectedPlace = intent.getSerializableExtra("selectedPlace") as Place
+                val selectedLocation = LatLng(selectedPlace.latitude!!,selectedPlace.longitude!!)
+                mMap.addMarker(MarkerOptions().title(selectedPlace.address).position(selectedLocation))
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLocation,15f))
             }
 
         }

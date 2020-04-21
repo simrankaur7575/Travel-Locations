@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -68,6 +69,15 @@ class MainActivity : AppCompatActivity() {
             e.printStackTrace()
         }
 
+        val customAdapter =
+            CustomAdapter(placesArray, this)
+        listView.adapter = customAdapter
 
+        listView.setOnItemClickListener{adapterView, view, i, l ->
+            val intent = Intent(applicationContext, MapsActivity::class.java)
+            intent.putExtra("info","old")
+            intent.putExtra("selectedPlace",placesArray.get(i))
+            startActivity(intent)
+        }
     }
 }
