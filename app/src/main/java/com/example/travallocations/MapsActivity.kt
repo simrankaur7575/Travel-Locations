@@ -3,10 +3,12 @@ package com.example.travallocations
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -17,6 +19,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.util.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -44,6 +47,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mMap.setOnMapLongClickListener(myListener)
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationListener = object : LocationListener {
@@ -98,6 +102,70 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     }
+
+    val myListener = object : GoogleMap.OnMapLongClickListener {
+        override fun onMapLongClick(p0: LatLng?) {
+            val geocoder = Geocoder(this@MapsActivity, Locale.getDefault())
+
+            var address = ""
+
+            if (p0 != null) {
+                try {
+                    val adressList = geocoder.getFromLocation(p0.latitude, p0.longitude, 1)
+
+                    if (adressList != null && adressList.size > 0) {
+                        if (adressList[0].thoroughfare != null) {
+                            address += adressList[0].thoroughfare
+                            if (adressList[0].subThoroughfare != null) {
+                                address += adressList[0].subThoroughfare
+                            }
+                        }
+                    } else {
+                        address = "New Place"
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                mMap.clear()
+
+                mMap.addMarker(MarkerOptions().position(p0).title(address))
+
+//                val newPlace =
+//                    Place(
+//                        address,
+//                        p0.latitude,
+//                        p0.longitude
+//                    )
+//
+//                val dialog = AlertDialog.Builder(this@MapsActivity)
+//                dialog.setCancelable(false)
+//                dialog.setTitle("Are You Sure?")
+//                dialog.setMessage(newPlace.address)
+//                dialog.setPositiveButton("Yes") {dialog, which ->
+//                    //SQLite Save
+//
+//                    try {
+//
+//                        val database = openOrCreateDatabase("Places",Context.MODE_PRIVATE,null)
+//                        database.execSQL("CREATE TABLE IF NOT EXISTS places (address VARCHAR, latitude DOUBLE, longitude DOUBLE)")
+//                        val toCompile = "INSERT INTO places (address, latitude, longitude) VALUES (?, ?, ?)"
+//                        val sqLiteStatement = database.compileStatement(toCompile)
+//                        sqLiteStatement.bindString(1,newPlace.address)
+//                        sqLiteStatement.bindDouble(2,newPlace.latitude!!)
+//                        sqLiteStatement.bindDouble(3,newPlace.longitude!!)
+//                        sqLiteStatement.execute()
+//
+//
+//                    } catch (e: Exception) {
+//                        e.printStackTrace()
+//                    }
+
+                    Toast.makeText(this@MapsActivity,"New Place Created",Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
