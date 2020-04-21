@@ -2,17 +2,19 @@ package com.example.travallocations
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -20,6 +22,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.lang.Exception
 import java.util.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -27,6 +30,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
     private lateinit var locationManager : LocationManager
     private lateinit var locationListener : LocationListener
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,17 +41,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val intentToMain = Intent(this, MainActivity::class.java)
+        startActivity(intentToMain)
+        finish()
+    }
+
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+
         mMap.setOnMapLongClickListener(myListener)
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -56,12 +60,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 if (location != null) {
 
-
-
+                    val sharedPreferences = this@MapsActivity.getSharedPreferences("com.atilsamancioglu.kotlintravelbook",Context.MODE_PRIVATE)
+                    val firstTimeCheck = sharedPreferences.getBoolean("notFirstTime",false)
+                    if (!firstTimeCheck) {
+                        mMap.clear()
                         val newUserLocation = LatLng(location.latitude,location.longitude)
-                        mMap.addMarker(MarkerOptions().position(newUserLocation).title("Your Location"))
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newUserLocation,15f))
-
+                        sharedPreferences.edit().putBoolean("notFirstTime",true).apply()
+                    }
 
                 }
 
@@ -78,32 +84,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
         } else {
-
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,2,2f,locationListener)
 
             val intent = intent
             val info = intent.getStringExtra("info")
 
             if (info.equals("new")) {
-                mMap.clear()
                 val lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 if (lastLocation != null) {
                     val lastLocationLatLng = LatLng(lastLocation.latitude,lastLocation.longitude)
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(lastLocationLatLng,15f))
                 }
             } else {
+
                 mMap.clear()
 
                 val selectedPlace = intent.getSerializableExtra("selectedPlace") as Place
                 val selectedLocation = LatLng(selectedPlace.latitude!!,selectedPlace.longitude!!)
                 mMap.addMarker(MarkerOptions().title(selectedPlace.address).position(selectedLocation))
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLocation,15f))
+
+
             }
 
+
         }
+
 
 
     }
@@ -148,16 +157,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 dialog.setTitle("Are You Sure?")
                 dialog.setMessage(newPlace.address)
                 dialog.setPositiveButton("Yes") {dialog, which ->
+                    //SQLite Save
 
                     try {
 
-                        val database = openOrCreateDatabase("Places", Context.MODE_PRIVATE, null)
+                        val database = openOrCreateDatabase("Places",Context.MODE_PRIVATE,null)
                         database.execSQL("CREATE TABLE IF NOT EXISTS places (address VARCHAR, latitude DOUBLE, longitude DOUBLE)")
                         val toCompile = "INSERT INTO places (address, latitude, longitude) VALUES (?, ?, ?)"
                         val sqLiteStatement = database.compileStatement(toCompile)
-                        sqLiteStatement.bindString(1, newPlace.address)
-                        sqLiteStatement.bindDouble(2, newPlace.latitude!!)
-                        sqLiteStatement.bindDouble(3, newPlace.longitude!!)
+                        sqLiteStatement.bindString(1,newPlace.address)
+                        sqLiteStatement.bindDouble(2,newPlace.latitude!!)
+                        sqLiteStatement.bindDouble(3,newPlace.longitude!!)
                         sqLiteStatement.execute()
 
 
@@ -165,17 +175,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         e.printStackTrace()
                     }
 
-                    Toast.makeText(this@MapsActivity, "New Place Created", Toast.LENGTH_LONG).show()
-
+                    Toast.makeText(this@MapsActivity,"New Place Created",Toast.LENGTH_LONG).show()
                 }.setNegativeButton("No") {dialog, which ->
                     Toast.makeText(this@MapsActivity,"Canceled!",Toast.LENGTH_LONG).show()
                 }
                 dialog.show()
-                }
+            }
         }
     }
-
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -190,5 +197,4 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
-
 }
