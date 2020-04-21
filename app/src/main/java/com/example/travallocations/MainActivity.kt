@@ -1,10 +1,11 @@
 package com.example.travallocations
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,11 +21,9 @@ class MainActivity : AppCompatActivity() {
 
         if (item.itemId == R.id.add_place_option) {
 
-                 val intent = Intent(applicationContext,
-//                    MapsActivity::class.java)
-//                intent.putExtra("info","new")
-//                startActivity(intent)
+            val intent = Intent(applicationContext, MapsActivity::class.java)
 
+            startActivity(intent)
         }
 
         return super.onOptionsItemSelected(item)
